@@ -1,8 +1,8 @@
 #! /bin/sh -e
 #
-# install_leap.sh
+# install_spring.sh
 #
-# This script will install the leap .deb package with version as provided in $1.
+# This script will install the spring .deb package with version as provided in $1.
 # If $1 is 'latest', the latest release is used.
 #
 
@@ -16,13 +16,13 @@ fi
 
 # Sanity check version, set the variable.
 if [ -z "$1" ]; then
-    echo "arg 1, leap version, is empty."
+    echo "arg 1, spring version, is empty."
     exit 1
 fi
 VERSION=$1
 # Allow latest as an option in case insensitive fashion.
 if [ "$(echo "${VERSION}" | tr "[:lower:]" "[:upper:]")" = "LATEST" ]; then
-    VERSION=$(wget -q -O- https://api.github.com/repos/"$ORG"/leap/releases/latest | jq -r '.tag_name' | cut -c2-)
+    VERSION=$(wget -q -O- https://api.github.com/repos/"$ORG"/spring/releases/latest | jq -r '.tag_name' | cut -c2-)
 fi
 
 # Currently, the dev and non-x86 binaries are experimental. This function will fetch them for us.
@@ -46,8 +46,8 @@ fetch_experimental_binaries () {
 }
 
 
-# Remove any existing leap packages.
-rm -f leap*ubuntu*.deb || true
+# Remove any existing spring packages.
+rm -f spring*ubuntu*.deb || true
 
 
 # Package names are based on version and architecture.
@@ -57,32 +57,32 @@ case $VERSION in
     "3.1"*)
         fetch_experimental_binaries
         if [ "$(uname -m)" = "x86_64" ]; then
-            LEAP_PKG=leap-"${VERSION}"-ubuntu20.04-x86_64.deb
-            LEAP_DEV_PKG=leap-dev-"${VERSION}"-ubuntu20.04-x86_64.deb
-            wget https://github.com/"${ORG}"/leap/releases/download/v"${VERSION}"/"${LEAP_PKG}"
+            spring_PKG=antelope-spring-"${VERSION}"_amd64.deb
+            spring_DEV_PKG=antelope-spring-spring-dev-"${VERSION}"_amd64.deb
+            wget https://github.com/"${ORG}"/spring/releases/download/v"${VERSION}"/"${spring_PKG}"
         else
-            LEAP_PKG=leap-"${VERSION}"-ubuntu20.04-aarch64.deb
-            LEAP_DEV_PKG=leap-dev-"${VERSION}"-ubuntu20.04-aarch64.deb
+            spring_PKG=antelope-spring-"${VERSION}"_arm64.deb
+            spring_DEV_PKG=antelope-spring-spring-dev_"${VERSION}"_arm64.deb
         fi;;
 
     # All others:
     *)
         fetch_experimental_binaries
         if [ "$(uname -m)" = "x86_64" ]; then
-            LEAP_PKG=leap_"${VERSION}"-ubuntu20.04_amd64.deb
-            LEAP_DEV_PKG=leap-dev_"${VERSION}"-ubuntu20.04_amd64.deb
-            echo wget https://github.com/"${ORG}"/leap/releases/download/v"${VERSION}"/"${LEAP_PKG}"
-            wget "https://github.com/${ORG}/leap/releases/download/v${VERSION}/${LEAP_PKG}"
+            spring_PKG=antelope-spring_"${VERSION}"_amd64.deb
+            spring_DEV_PKG=antelope-spring-spring-dev_"${VERSION}"_amd64.deb
+            echo wget https://github.com/"${ORG}"/spring/releases/download/v"${VERSION}"/"${spring_PKG}"
+            wget "https://github.com/${ORG}/spring/releases/download/v${VERSION}/${spring_PKG}"
         else
-            LEAP_PKG=leap_"${VERSION}"-ubuntu20.04_arm64.deb
-            LEAP_DEV_PKG=leap-dev_"${VERSION}"-ubuntu20.04_arm64.deb
+            spring_PKG=spring_"${VERSION}"_arm64.deb
+            spring_DEV_PKG=spring-dev_"${VERSION}"_arm64.deb
         fi;;
 esac
 
 
 # Get the package and install it
-apt --assume-yes --allow-downgrades install ./"${LEAP_PKG}" ./"${LEAP_DEV_PKG}"
+apt --assume-yes --allow-downgrades install ./"${spring_PKG}" ./"${spring_DEV_PKG}"
 
 
 # Remove any downloaded packages.
-rm -f leap*ubuntu*.deb || true
+rm -f spring*ubuntu*.deb || true
