@@ -84,7 +84,7 @@ def build_image(leap_version=None, cdt_version=None, contracts_version=None, tag
         group_id = 200
 
     # pylint: disable=line-too-long
-    build_command = ['docker', 'build', '--no-cache', '-f','Dockerfile', '-t',tag, barg,f'USER_ID={user_id}', barg,f'GROUP_ID={group_id}', DUNES_ROOT]
+    build_command = ['docker', 'build', '--platform=linux/amd64', '--no-cache', '-f','Dockerfile', '-t',tag, barg,f'USER_ID={user_id}', barg,f'GROUP_ID={group_id}', DUNES_ROOT]
 
     if leap_version:
         build_command.extend( [barg, f'LEAP_VERSION={leap_version}'] )
