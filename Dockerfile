@@ -1,38 +1,46 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ARG USER_ID
 ARG GROUP_ID
-
 ARG ORG="AntelopeIO"
 
-# The following tool versions should be updated to match the latest release. Note that contracts currently takes the full git commit hash.
-ARG LEAP_VERSION=latest
+# Update these to match releases; contracts can be a full git commit hash.
+ARG SPRING_VERSION=latest
 ARG CDT_VERSION=latest
 ARG CONTRACTS_VERSION=latest
 
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+# Ensure global npm installs land on PATH
+ENV NPM_CONFIG_PREFIX=/usr/local
 
-RUN apt-get update
-RUN apt-get update --fix-missing
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
-RUN apt-get -y install zip unzip libncurses5 wget git build-essential cmake curl libboost-all-dev libcurl4-openssl-dev libgmp-dev libssl-dev libusb-1.0.0-dev libzstd-dev time pkg-config llvm-11-dev nginx npm yarn jq gdb lldb
-RUN npm install -D webpack-cli
-RUN npm install -D webpack
-RUN npm install -D webpack-dev-server
+# Base tooling (including nodejs & npm from Ubuntu repos)
+# If you need newer Node, swap to NodeSource or the official node image.
+RUN apt-get update && \
+    apt-get -y install --no-install-recommends \
+      tzdata \
+      zip unzip libncurses5 wget git build-essential cmake curl \
+      libboost-all-dev libcurl4-openssl-dev libgmp-dev libssl-dev \
+      libusb-1.0.0-dev libzstd-dev time pkg-config llvm-11-dev \
+      nginx nodejs npm yarn jq gdb lldb ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
+# Install webpack toolchain globally to avoid running npm in /
+RUN npm cache clean --force && \
+    npm install -g webpack webpack-cli webpack-dev-server --no-audit --no-fund
+
+# From here on, work inside /app
 WORKDIR /app
 
 # Copy the scripts
 COPY ./scripts/ .
-RUN chmod +x *.sh
-RUN mv my_init /sbin
+RUN chmod +x *.sh && mv my_init /sbin
 
-
-# 
-# Install our software.
-RUN ./bootstrap_leap.sh $LEAP_VERSION
-RUN ./bootstrap_cdt.sh $CDT_VERSION
-RUN ./bootstrap_contracts.sh $CONTRACTS_VERSION
+# Install your software
+RUN ./bootstrap_leap.sh "$SPRING_VERSION"
+RUN ./bootstrap_cdt.sh "$CDT_VERSION"
+RUN ./bootstrap_contracts.sh "$CONTRACTS_VERSION"
 RUN ./setup_system.sh
 
 RUN mkdir -p /app/nodes
@@ -41,6 +49,7 @@ RUN mkdir -p /app/nodes
 # this should solve reaping issues of stopped nodes
 CMD ["/sbin/my_init"]
 
+# Exposed ports
 # port for nodeos p2p
 EXPOSE 9876
 # port for nodeos http
