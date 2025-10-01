@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ARG USER_ID
 ARG GROUP_ID
@@ -15,13 +15,16 @@ ENV TZ=Etc/UTC
 # Ensure global npm installs land on PATH
 ENV NPM_CONFIG_PREFIX=/usr/local
 
+#Check which version 
+RUN dpkg --print-architecture && uname -m
+
 # Base tooling (including nodejs & npm from Ubuntu repos)
 # If you need newer Node, swap to NodeSource or the official node image.
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
       tzdata \
       zip unzip libncurses5 wget git build-essential cmake curl \
-      libboost-all-dev libcurl4-openssl-dev libgmp-dev libssl-dev \
+      libboost-all-dev libcurl4-gnutls-dev libgmp-dev libssl-dev \
       libusb-1.0.0-dev libzstd-dev time pkg-config llvm-11-dev \
       nginx nodejs npm yarn jq gdb lldb ca-certificates && \
     rm -rf /var/lib/apt/lists/*

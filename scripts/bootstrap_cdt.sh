@@ -37,7 +37,7 @@ rm -f cdt_*.deb || true
 
 
 # get the package and install it.
-CDT_PKG=cdt_"${VERSION}"_"${PARCH}".deb
+CDT_PKG=cdt_"${VERSION}"-1_"${PARCH}".deb
 wget https://github.com/"${ORG}"/cdt/releases/download/v"${VERSION}"/"${CDT_PKG}"
 apt --assume-yes --allow-downgrades install ./"${CDT_PKG}"
 
